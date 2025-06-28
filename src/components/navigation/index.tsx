@@ -1,14 +1,41 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, ParamListBase, RouteProp } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenContent } from '~/components/ScreenContent';
+import CreateWorkoutAndScheduleScreen from '~/screens/workout/CreateWorkoutAndScheduleScreen';
+import WorkoutScreen from '~/screens/workout/workout';
 import HomePage from '~/screens/home/home';
 
-const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+// Define types for your tab navigator
+export type RootTabParamList = {
+  Home: undefined;
+  Add: undefined;
+  Workout: { initialTab?: 'previousWorkouts' | 'previousSchedules' };
+  Settings: undefined;
+};
+
+// Define types for your stack navigators within tabs
+export type HomeStackParamList = {
+  HomeMain: undefined;
+};
+
+export type AddStackParamList = {
+  AddMain: undefined;
+};
+
+export type WorkoutStackParamList = {
+  WorkoutMain: { initialTab?: 'previousWorkouts' | 'previousSchedules' };
+};
+
+export type SettingsStackParamList = {
+  SettingsMain: undefined;
+};
+
+const Tab = createBottomTabNavigator<RootTabParamList>();
+const Stack = createNativeStackNavigator<ParamListBase>();
 
 // Home stack
 function HomeStack() {
@@ -31,8 +58,22 @@ function AddStack() {
       <Stack.Screen
         name="AddMain"
         options={{ headerShown: false }}
-        component={() => <ScreenContent title="Add Workout" path="app/add.tsx" />}
+        component={CreateWorkoutAndScheduleScreen}
       />
+    </Stack.Navigator>
+  );
+}
+
+// Workout stack
+function WorkoutStack({ route }: { route: RouteProp<RootTabParamList, 'Workout'> }) {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="WorkoutMain"
+        options={{ headerShown: false }}
+      >
+        {() => <WorkoutScreen route={route} />}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }
@@ -57,7 +98,7 @@ export default function TabLayout() {
         screenOptions={({ route }) => ({
           tabBarShowLabel: false,
           tabBarStyle: {
-            height: 60,
+            height: 70,
             backgroundColor: '#191558',
             borderTopWidth: 0,
           },
@@ -77,6 +118,7 @@ export default function TabLayout() {
               iconName = focused ? 'add-circle-sharp' : 'add-circle-outline';
               iconSize = focused ? 36 : 28;
             }
+            if (route.name === 'Workout') iconName = focused ? 'barbell-sharp' : 'barbell-outline';
             if (route.name === 'Settings') iconName = focused ? 'settings-sharp' :  'settings-outline';
 
             return (
@@ -89,7 +131,7 @@ export default function TabLayout() {
               >
                 <View
                   style={{
-                    height: 55,
+                    height: 60,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
@@ -103,6 +145,7 @@ export default function TabLayout() {
       >
         <Tab.Screen name="Home">{HomeStack}</Tab.Screen>
         <Tab.Screen name="Add">{AddStack}</Tab.Screen>
+        <Tab.Screen name="Workout">{WorkoutStack}</Tab.Screen>
         <Tab.Screen name="Settings">{SettingsStack}</Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>

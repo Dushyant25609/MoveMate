@@ -1,31 +1,29 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text } from 'react-native';
 import WorkoutTab from '~/components/tab/workout';
+import { day, Schedule } from '~/types';
 
 interface UpcomingWorkoutsProps {
-  data: { date: number; month: string; workout: string; day: string }[];
+  sortedDays: string[];
+  groupedWorkouts: Record<string, { workout: Schedule['workout']; day: string; date: string }[]>;
 }
 
-const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({ data }) => {
+const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({ sortedDays, groupedWorkouts }) => {
   return (
     <View>
-      <Text className="text-lg font-semibold text-white/70 mb-3 tracking-wide">
-        Upcoming Workouts
-      </Text>
-      <FlatList
-        data={data}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={{ gap: 12, paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <WorkoutTab
-            date={item.date}
-            day={item.day}
-            month={item.month}
-            workout={item.workout}
-          />
-        )}
-      />
+      <Text className="text-gray-400 font-semibold mb-2">Upcoming workouts</Text>
+      {sortedDays.map(day => (
+        <View key={day}>
+          {groupedWorkouts[day].map((item, idx) => (
+            <WorkoutTab
+              key={`${item.workout.name}-${idx}`}
+              date={item.date}
+              day={item.day as day}
+              workout={item.workout}
+            />
+          ))}
+        </View>
+      ))}
     </View>
   );
 };

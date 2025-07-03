@@ -4,16 +4,19 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ScreenContent } from '~/components/ScreenContent';
+import SettingsScreen from '~/screens/settings/SettingsScreen';
 import CreateWorkoutAndScheduleScreen from '~/screens/workout/CreateWorkoutAndScheduleScreen';
 import WorkoutScreen from '~/screens/workout/workout';
 import HomePage from '~/screens/home/home';
+import DashboardScreen from '~/screens/dashboard/dashboard';
+import { Exercise, Schedule } from '~/types';
 
 // Define types for your tab navigator
 export type RootTabParamList = {
   Home: undefined;
+  Dashboard: undefined;
   Add: undefined;
-  Workout: { initialTab?: 'previousWorkouts' | 'previousSchedules' };
+  Workout: { initialTab?: 'previousWorkouts' | 'previousSchedules' | 'inProgress' };
   Settings: undefined;
 };
 
@@ -23,7 +26,7 @@ export type HomeStackParamList = {
 };
 
 export type AddStackParamList = {
-  AddMain: undefined;
+  AddMain: { name?: string; exercise?: Exercise[]; schedule?: Schedule } | undefined;
 };
 
 export type WorkoutStackParamList = {
@@ -33,6 +36,9 @@ export type WorkoutStackParamList = {
 export type SettingsStackParamList = {
   SettingsMain: undefined;
 };
+export type DashboardStackParamList = {
+  DashboardMain: undefined;
+};
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createNativeStackNavigator<ParamListBase>();
@@ -41,10 +47,7 @@ const Stack = createNativeStackNavigator<ParamListBase>();
 function HomeStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="HomeMain"
-        options={{ headerShown: false }}
-      >
+      <Stack.Screen name="HomeMain" options={{ headerShown: false }}>
         {() => <HomePage />}
       </Stack.Screen>
     </Stack.Navigator>
@@ -68,10 +71,7 @@ function AddStack() {
 function WorkoutStack({ route }: { route: RouteProp<RootTabParamList, 'Workout'> }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="WorkoutMain"
-        options={{ headerShown: false }}
-      >
+      <Stack.Screen name="WorkoutMain" options={{ headerShown: false }}>
         {() => <WorkoutScreen route={route} />}
       </Stack.Screen>
     </Stack.Navigator>
@@ -85,7 +85,19 @@ function SettingsStack() {
       <Stack.Screen
         name="SettingsMain"
         options={{ headerShown: false }}
-        component={() => <ScreenContent title="Settings" path="app/settings.tsx" />}
+        component={SettingsScreen}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function DashboardStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="DashboardMain"
+        options={{ headerShown: false }}
+        component={() => <DashboardScreen />}
       />
     </Stack.Navigator>
   );
@@ -104,7 +116,7 @@ export default function TabLayout() {
           },
           tabBarLabelPosition: 'beside-icon',
           tabBarIconStyle: {
-            width: "100%",
+            width: '100%',
           },
           headerShown: false,
           animation: 'fade',
@@ -119,7 +131,10 @@ export default function TabLayout() {
               iconSize = focused ? 36 : 28;
             }
             if (route.name === 'Workout') iconName = focused ? 'barbell-sharp' : 'barbell-outline';
-            if (route.name === 'Settings') iconName = focused ? 'settings-sharp' :  'settings-outline';
+            if (route.name === 'Settings')
+              iconName = focused ? 'person-circle-sharp' : 'person-circle-outline';
+            if (route.name === 'Dashboard')
+              iconName = focused ? 'stats-chart' : 'stats-chart-outline';
 
             return (
               <View
@@ -144,6 +159,7 @@ export default function TabLayout() {
         })}
       >
         <Tab.Screen name="Home">{HomeStack}</Tab.Screen>
+        <Tab.Screen name="Dashboard">{DashboardStack}</Tab.Screen>
         <Tab.Screen name="Add">{AddStack}</Tab.Screen>
         <Tab.Screen name="Workout">{WorkoutStack}</Tab.Screen>
         <Tab.Screen name="Settings">{SettingsStack}</Tab.Screen>

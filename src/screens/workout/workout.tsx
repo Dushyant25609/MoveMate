@@ -4,12 +4,14 @@ import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import PreviousWorkouts from './workout/Workouts';
 import PreviousSchedules from './workout/Schedules';
 import { RouteProp } from '@react-navigation/native';
+import { useState } from 'react';
 import { RootTabParamList } from '~/components/navigation';
-
+import InProgressWorkouts from './workout/InProgressWorkouts';
 
 const renderScene = SceneMap({
   previousWorkouts: PreviousWorkouts,
   previousSchedules: PreviousSchedules,
+  inProgress: InProgressWorkouts,
 });
 
 type WorkoutScreenRouteProp = RouteProp<RootTabParamList, 'Workout'>;
@@ -23,12 +25,19 @@ const WorkoutScreen = ({ route }: WorkoutScreenProps) => {
 
   const initialTab = route.params?.initialTab;
 
-  const [index, setIndex] = React.useState(
-    initialTab === 'previousSchedules' ? 1 : 0
+  const [index, setIndex] = useState(
+    initialTab === 'previousWorkouts'
+      ? 0
+      : initialTab === 'previousSchedules'
+        ? 1
+        : initialTab === 'inProgress'
+          ? 2
+          : 0,
   );
-  const [routes] = React.useState([
+  const [routes] = useState([
     { key: 'previousWorkouts', title: 'Workouts' },
     { key: 'previousSchedules', title: 'Schedules' },
+    { key: 'inProgress', title: 'In Progress' },
   ]);
 
   const renderTabBar = (props: any) => (

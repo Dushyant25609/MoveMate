@@ -1,19 +1,47 @@
-import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { FC, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Menu, Button, Checkbox } from 'react-native-paper';
+import { days } from '~/constant/date';
+import { useWorkoutStore } from '~/store/workout';
+import { day, Schedule, Workout } from '~/types';
 
-const CreateSchedule = ({ onSave }: { onSave: () => void }) => {
+interface createScheduleProps {
+  schedule: Schedule;
+}
+
+const CreateSchedule: FC<createScheduleProps> = ({ schedule  = {workout : {name: 'null', exercises: [], avgTime: 0}, day : []} }) => {
   const [workoutMenuVisible, setWorkoutMenuVisible] = useState(false);
-  const [selectedWorkout, setSelectedWorkout] = useState<string | null>(null);
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [selectedDays, setSelectedDays] = useState<day[]>([]);
+  console.log("create schedule:",schedule.workout?.name);
+  useEffect(() => {
+    if (schedule?.workout.name === 'null') return;
+    setSelectedWorkout(schedule.workout);
+    setSelectedDays(schedule.day); 
+  },[schedule]);
 
-  const workouts = ['Push Day', 'Leg Day', 'Cardio'];
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const workoutState = useWorkoutStore();
+  const navigation = useNavigation<any>();
 
-  const toggleDaySelection = (day: string) => {
-    setSelectedDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
-    );
+  const toggleDaySelection = (day: day) => {
+    setSelectedDays(prev => (prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]));
+  };
+
+  const saveSchedules = (workout: Workout, days: day[]) => {
+    if (schedule.workout.name === 'null') {
+      const schedules: Schedule[] = [...workoutState.schedules, { workout, day: days }];
+      workoutState.setSchedules(schedules);
+    } else {
+      const schedules: Schedule[] = workoutState.schedules.map(s =>
+        s.workout.name === schedule.workout.name ? { workout, day: days } : s
+      );
+      workoutState.setSchedules(schedules);
+    }
+    setSelectedDays([]);
+    setSelectedWorkout(null);
+    navigation.navigate('Workout', { initialTab: 'previousSchedules' });
+    navigation.setParams({ schedule: undefined, initialTab: undefined });
   };
 
   return (
@@ -29,41 +57,47 @@ const CreateSchedule = ({ onSave }: { onSave: () => void }) => {
             style={styles.dropdown}
             labelStyle={styles.buttonText}
           >
-            {selectedWorkout || 'Choose a workout'}
+            {selectedWorkout?.name || 'Choose a workout'}
           </Button>
         }
       >
-        {workouts.map((workout, idx) => (
-          <Menu.Item
-            key={idx}
-            title={workout}
-            onPress={() => {
-              setSelectedWorkout(workout);
-              setWorkoutMenuVisible(false);
-            }}
-          />
-        ))}
+        {workoutState.workouts.length > 0 &&
+          workoutState.workouts.map((workout, idx) => (
+            <Menu.Item
+              key={idx}
+              title={workout.name}
+              onPress={() => {
+                setSelectedWorkout(workout);
+                setWorkoutMenuVisible(false);
+              }}
+            />
+          ))}
       </Menu>
 
       <Text style={[styles.label, { marginTop: 20 }]}>Select Days</Text>
       <View style={styles.daysContainer}>
-        {daysOfWeek.map((day, idx) => (
+        {days.map((day, idx) => (
           <Checkbox.Item
             key={idx}
             label={day}
             position="leading"
             labelStyle={styles.dayText}
             color="#6366f1"
-            status={selectedDays.includes(day) ? 'checked' : 'unchecked'}
-            onPress={() => toggleDaySelection(day)}
+            status={selectedDays.includes(day as day) ? 'checked' : 'unchecked'}
+            onPress={() => toggleDaySelection(day as day)}
             style={styles.dayItem}
           />
         ))}
       </View>
 
-      <TouchableOpacity onPress={onSave} style={styles.submitButton}>
-        <Text style={styles.submitText}>Schedule Workout</Text>
-      </TouchableOpacity>
+      {selectedWorkout !== null && selectedDays.length > 0 && (
+        <TouchableOpacity
+          onPress={() => saveSchedules(selectedWorkout, selectedDays)}
+          style={styles.submitButton}
+        >
+          <Text style={styles.submitText}>Schedule Workout</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

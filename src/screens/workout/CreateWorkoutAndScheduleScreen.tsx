@@ -1,19 +1,24 @@
 import * as React from 'react';
 import { useWindowDimensions } from 'react-native';
 import { TabView, TabBar } from 'react-native-tab-view';
-import { Route, useNavigation } from '@react-navigation/native';
 import CreateWorkout from './workout/CreateWorkout';
 import CreateSchedule from './workout/CreateSchedule';
 
-const CreateWorkoutAndScheduleScreen = () => {
-  const navigation = useNavigation<any>();
+import { Route, useRoute } from '@react-navigation/native';
 
-  const renderScene = ({ route }: { route: Route<string> }) => {
-    switch (route.key) {
+const CreateWorkoutAndScheduleScreen = () => {
+  const route = useRoute<any>();
+  const { name, exercise, schedule, initialTab } = route.params || {};
+  console.log('initialTab', initialTab);
+
+  const renderScene = ({ route: tabRoute }: { route: Route<string> }) => {
+    switch (tabRoute.key) {
       case 'createWorkout':
-        return <CreateWorkout onSave={() => navigation.navigate('Workout', { initialTab: 'previousWorkouts' })} />;
+        return <CreateWorkout name={name} exercise={exercise} />;
       case 'createSchedule':
-        return <CreateSchedule onSave={() => navigation.navigate('Workout', { initialTab: 'previousSchedules' })} />;
+        return (
+          <CreateSchedule schedule={schedule} />
+        );
       default:
         return null;
     }
@@ -21,10 +26,14 @@ const CreateWorkoutAndScheduleScreen = () => {
 
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
-    
     { key: 'createWorkout', title: 'Create Workout' },
     { key: 'createSchedule', title: 'Create Schedule' },
   ]);
+
+  React.useEffect(() => {
+    if(initialTab === 'createWorkout')setIndex(0);
+    if(initialTab === 'createSchedule')setIndex(1);
+  });
 
   const renderTabBar = (props: any) => (
     <TabBar

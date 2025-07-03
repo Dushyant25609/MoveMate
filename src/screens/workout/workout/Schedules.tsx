@@ -1,53 +1,52 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, Pressable } from 'react-native';
-import { format, addDays, startOfWeek, isSameDay, subDays } from 'date-fns';
-import { Ionicons } from '@expo/vector-icons';
-
-interface Workout {
-  name: string;
-  exercises: string[];
-  avgTime: number;
-  date: Date;
-}
-
-const dummyWorkouts: Workout[] = [
-  {
-    name: 'Push Day',
-    exercises: ['Bench Press', 'Shoulder Press', 'Triceps Dips'],
-    avgTime: 45,
-    date: new Date(),
-  },
-  {
-    name: 'Leg Day',
-    exercises: ['Squat', 'Lunges', 'Calf Raises'],
-    avgTime: 50,
-    date: subDays(new Date(), 1),
-  },
-  {
-    name: 'Cardio',
-    exercises: ['Running', 'Jump Rope'],
-    avgTime: 30,
-    date: subDays(new Date(), 2),
-  },
-];
+import { View, Text, FlatList, Pressable, TouchableOpacity } from 'react-native';
+import { format, addDays, startOfWeek } from 'date-fns';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { useWorkoutStore } from '~/store/workout';
+import { day } from '~/types';
+import { useNavigation } from '@react-navigation/native';
 
 const getWeekDates = () => {
   const start = startOfWeek(new Date(), { weekStartsOn: 1 });
   return Array.from({ length: 7 }, (_, i) => addDays(start, i));
 };
 
+
 const WeeklyWorkoutSchedule = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<day>(format(new Date(), 'EEEE') as day);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
+  const workoutState = useWorkoutStore();
+  const navigation = useNavigation<any>();
 
   const weekDates = getWeekDates();
 
-  const filteredWorkouts = dummyWorkouts.filter((workout) =>
-    isSameDay(workout.date, selectedDate)
+  const filteredWorkouts = workoutState.schedules.filter(workout =>
+    workout.day.includes(selectedDate),
   );
 
   const toggleExpand = (name: string) => {
-    setExpandedWorkout((prev) => (prev === name ? null : name));
+    setExpandedWorkout(prev => (prev === name ? null : name));
+  };
+
+  const handleEdit = (workoutName: string) => {
+    const schedule = workoutState.schedules.find(s => s.workout.name === workoutName);
+    if (schedule) {
+      navigation.navigate('Add', {
+        
+        screen: 'AddMain',
+        params: {
+          schedule: schedule,
+          initialTab: 'createSchedule',
+        },
+      });
+    }
+    console.log('Edit schedule workout:', workoutName);
+    // Navigate or open modal logic goes here
+  };
+
+  const handleDelete = (workoutName: string) => {
+    workoutState.removeSchedule(workoutName);
+    console.log('Delete schedule workout:', workoutName);
   };
 
   return (
@@ -65,13 +64,13 @@ const WeeklyWorkoutSchedule = () => {
             data={weekDates}
             horizontal
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.toDateString()}
+            keyExtractor={item => item.toDateString()}
             contentContainerStyle={{ marginBottom: 24 }}
             renderItem={({ item: date }) => {
-              const isActive = isSameDay(date, selectedDate);
+              const isActive = (format(date, 'EEEE') as day) === selectedDate;
               return (
                 <Pressable
-                  onPress={() => setSelectedDate(date)}
+                  onPress={() => setSelectedDate(format(date, 'EEEE') as day)}
                   style={{
                     marginHorizontal: 8,
                     paddingHorizontal: 16,
@@ -88,7 +87,9 @@ const WeeklyWorkoutSchedule = () => {
                   <Text style={{ color: isActive ? '#fff' : '#ccc', fontSize: 14 }}>
                     {format(date, 'EEE')}
                   </Text>
-                  <Text style={{ color: isActive ? '#fff' : '#aaa', fontWeight: '700', fontSize: 18 }}>
+                  <Text
+                    style={{ color: isActive ? '#fff' : '#aaa', fontWeight: '700', fontSize: 18 }}
+                  >
                     {format(date, 'd')}
                   </Text>
                 </Pressable>
@@ -107,13 +108,13 @@ const WeeklyWorkoutSchedule = () => {
         </>
       }
       data={filteredWorkouts}
-      keyExtractor={(item) => item.name}
+      keyExtractor={(item, index) => index.toString()}
       renderItem={({ item }) => {
-        const isExpanded = expandedWorkout === item.name;
+        const isExpanded = expandedWorkout === item.workout.name;
 
         return (
           <Pressable
-            onPress={() => toggleExpand(item.name)}
+            onPress={() => toggleExpand(item.workout.name)}
             style={{
               backgroundColor: 'rgba(255,255,255,0.05)',
               borderColor: 'rgba(255,255,255,0.1)',
@@ -123,22 +124,35 @@ const WeeklyWorkoutSchedule = () => {
               marginBottom: 16,
             }}
           >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+            <View
+              style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}
+            >
               <Text style={{ fontSize: 18, fontWeight: '600', color: '#c7d2fe' }}>
-                {item.name}
+                {item.workout.name}
               </Text>
-              <Ionicons
-                name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                size={22}
-                color="#c7d2fe"
-              />
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                <TouchableOpacity onPress={() => handleEdit(item.workout.name)}>
+                  <Feather name="edit" size={18} color="#c7d2fe" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item.workout.name)}>
+                  <Feather name="trash-2" size={18} color="#ef4444" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => toggleExpand(item.workout.name)}>
+                  <Ionicons
+                    name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={22}
+                    color="#c7d2fe"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
 
             <Text style={{ color: '#aaa', marginBottom: 4 }}>
-              Exercises: <Text style={{ color: '#fff' }}>{item.exercises.length}</Text>
+              Exercises: <Text style={{ color: '#fff' }}>{item.workout.exercises.length}</Text>
             </Text>
             <Text style={{ color: '#aaa' }}>
-              Avg Time: <Text style={{ color: '#fff' }}>{item.avgTime} min</Text>
+              Avg Time: <Text style={{ color: '#fff' }}>{item.workout.avgTime} min</Text>
             </Text>
 
             {isExpanded && (
@@ -146,9 +160,9 @@ const WeeklyWorkoutSchedule = () => {
                 <Text style={{ color: '#c7d2fe', fontWeight: 'bold', marginBottom: 4 }}>
                   Exercise List:
                 </Text>
-                {item.exercises.map((exercise, idx) => (
+                {item.workout.exercises.map((exercise, idx) => (
                   <Text key={idx} style={{ color: '#eee', marginLeft: 8, marginBottom: 2 }}>
-                    • {exercise}
+                    • {exercise.name}
                   </Text>
                 ))}
               </View>

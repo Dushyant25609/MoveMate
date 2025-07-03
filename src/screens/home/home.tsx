@@ -1,41 +1,76 @@
 import React from 'react';
-import { View } from 'react-native';
-import { days, months } from '~/constant/date';
+import { ScrollView, Text, View } from 'react-native';
+import { dayIndexMap, days, months } from '~/constant/date';
 import Header from '~/components/home/Header';
 import DateWorkoutCard from '~/components/home/DateWorkoutCard';
 import ProgressTracker from '~/components/home/ProgressTracker';
 import StreakTracker from '~/components/home/StreakTracker';
 import QuickActions from '~/components/home/QuickActions';
+import WorkoutTab from '~/components/tab/workout';
+import { useUserStore } from '~/store/user';
+import { getCurrentWeekMap } from '~/utils/date';
+import { useWorkoutStore } from '~/store/workout';
+import { day, Schedule } from '~/types';
 import UpcomingWorkouts from '~/components/home/UpcomingWorkouts';
 
 const HomePage = () => {
+  const weekMap = getCurrentWeekMap();
+  const scheduleData = useWorkoutStore(state => state.schedules);
+  const userData = useUserStore();
+
+  const date = new Date().getDate();
+  const month = months[new Date().getMonth()];
   const today = new Date();
-  const dayName = days[today.getDay()];
-  const date = today.getDate();
-  const month = months[today.getMonth()];
+  const todayIndex = today.getDay() === 0 ? 7 : today.getDay();
+  const tomorrowIndex = todayIndex + 1;
 
-  const dummyData = [
-    { date: 25, month: 'June', workout: 'Arms', day: 'Today' },
-    { date: 26, month: 'June', workout: 'Back', day: 'Tomorrow' },
-  ];
+  // Group workouts by day
+  const groupedWorkouts: Record<
+    string,
+    { workout: Schedule['workout']; day: string; date: string }[]
+  > = {};
 
-  const workoutProgress = 0.6; // 60% complete this week
-  const currentStreak = 5;
+  scheduleData.forEach(entry => {
+    entry.day.forEach(d => {
+      const index = dayIndexMap[d as keyof typeof dayIndexMap];
+      let label = d;
+      if (index === todayIndex) label = 'Today';
+      else if (index === tomorrowIndex) label = 'Tomorrow';
+
+      if (!groupedWorkouts[label]) groupedWorkouts[label] = [];
+      groupedWorkouts[label].push({
+        workout: entry.workout,
+        day: label,
+        date: weekMap[d],
+      });
+    });
+  });
+
+  // Sort days based on index for rendering order
+  const sortedDays = Object.keys(groupedWorkouts).sort((a, b) => {
+    const dayA = a === 'Today' ? days[todayIndex] : a === 'Tomorrow' ? days[tomorrowIndex] : a;
+    const dayB = b === 'Today' ? days[todayIndex] : b === 'Tomorrow' ? days[tomorrowIndex] : b;
+    return (
+      dayIndexMap[dayA as keyof typeof dayIndexMap] - dayIndexMap[dayB as keyof typeof dayIndexMap]
+    );
+  });
 
   return (
-    <View className="h-full px-4 pt-10 pb-6 bg-primary-dark">
-      <Header userName="Mayank" />
-
-      <DateWorkoutCard dayName={dayName} date={date} month={month} workout="Arms" />
-
-      <ProgressTracker workoutProgress={workoutProgress} />
-
-      <StreakTracker currentStreak={currentStreak} />
-
+    <ScrollView className="h-full px-4 pt-10 pb-6 bg-primary-dark">
+      <Header userName={userData.name} />
+      <DateWorkoutCard
+        dayName={days[todayIndex]}
+        date={date}
+        month={month}
+        workout={groupedWorkouts['Today'] ? groupedWorkouts['Today'][0].workout.name : 'No workout today'}
+      />
+      <ProgressTracker workoutProgress={userData.progress} />
+      <StreakTracker currentStreak={userData.streak} />
       <QuickActions />
-
-      <UpcomingWorkouts data={dummyData} />
-    </View>
+      {scheduleData.length > 0 && (
+        <UpcomingWorkouts sortedDays={sortedDays} groupedWorkouts={groupedWorkouts} />
+      )}
+    </ScrollView>
   );
 };
 

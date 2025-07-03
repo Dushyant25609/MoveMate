@@ -9,7 +9,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ workoutProgress }) =>
   return (
     <View className="mb-6 bg-white/5 p-4 rounded-2xl border border-white/10 shadow-sm">
       <Text className="text-sm text-white/70 mb-2">Weekly Progress</Text>
-      
+
       <View className="w-full h-4 bg-white/10 rounded-full overflow-hidden">
         <View
           style={{ width: `${workoutProgress * 100}%` }}

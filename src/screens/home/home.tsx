@@ -1,16 +1,15 @@
 import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView } from 'react-native';
 import { dayIndexMap, days, months } from '~/constant/date';
 import Header from '~/components/home/Header';
 import DateWorkoutCard from '~/components/home/DateWorkoutCard';
 import ProgressTracker from '~/components/home/ProgressTracker';
 import StreakTracker from '~/components/home/StreakTracker';
 import QuickActions from '~/components/home/QuickActions';
-import WorkoutTab from '~/components/tab/workout';
 import { useUserStore } from '~/store/user';
 import { getCurrentWeekMap } from '~/utils/date';
 import { useWorkoutStore } from '~/store/workout';
-import { day, Schedule } from '~/types';
+import { Schedule } from '~/types';
 import UpcomingWorkouts from '~/components/home/UpcomingWorkouts';
 
 const HomePage = () => {

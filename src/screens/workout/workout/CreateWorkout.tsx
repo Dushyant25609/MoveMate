@@ -19,7 +19,7 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
   const navigation = useNavigation<any>();
 
   useEffect(() => {
-    if(name === '') return;
+    if (name === '') return;
     setWorkoutName(name);
     setExercises(exercise);
   });
@@ -45,24 +45,23 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
   };
 
   const saveWorkout = (name: string, exercises: Exercise[]) => {
-
-    if (name === '' || exercise.length === 0){
-    const workouts: Workout[] = [...workoutState.workouts, { name, exercises, avgTime: 0 }];
-    workoutState.setWorkouts(workouts);
-    const currentAvgTime = { ...workoutState.workoutAvgTime };
-    if (!currentAvgTime[name]) {
-      currentAvgTime[name] = [0, 0, 0, 0, 0, 0, 0];
-      workoutState.setWorkoutAvgTime(currentAvgTime);
-    }
-  } else {
-    const workouts: Workout[] = workoutState.workouts.map(workout => {
-      if (workout.name === name) {
-        return { ...workout, exercises };
+    if (name === '' || exercise.length === 0) {
+      const workouts: Workout[] = [...workoutState.workouts, { name, exercises, avgTime: 0 }];
+      workoutState.setWorkouts(workouts);
+      const currentAvgTime = { ...workoutState.workoutAvgTime };
+      if (!currentAvgTime[name]) {
+        currentAvgTime[name] = [0, 0, 0, 0, 0, 0, 0];
+        workoutState.setWorkoutAvgTime(currentAvgTime);
       }
-      return workout;
-    });
-    workoutState.setWorkouts(workouts);
-  }
+    } else {
+      const workouts: Workout[] = workoutState.workouts.map(workout => {
+        if (workout.name === name) {
+          return { ...workout, exercises };
+        }
+        return workout;
+      });
+      workoutState.setWorkouts(workouts);
+    }
     setWorkoutName('');
     setExerciseInput('');
     setExerciseSetsInput('');
@@ -71,7 +70,6 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
     navigation.setParams({ name: undefined, exercise: undefined, initialTab: undefined });
     console.log('Workout Saved');
   };
-
 
   return (
     <View className="flex-1 p-4 bg-primary-dark">
@@ -99,7 +97,7 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
           placeholderTextColor="#aaa"
           keyboardType="numeric"
           value={exerciseSetsInput}
-          onChangeText={(text) => {
+          onChangeText={text => {
             const num = parseInt(text);
             if (!isNaN(num) && num > 10) {
               Alert.alert('Limit Exceeded', 'You cannot enter more than 10 reps');
@@ -107,7 +105,6 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
             }
             setExerciseSetsInput(text);
           }}
-
         />
         <TouchableOpacity className="bg-indigo-500 px-4 py-2 rounded-xl" onPress={addExercise}>
           <Text className="text-white font-semibold">Add</Text>

@@ -15,7 +15,6 @@ const PreviousWorkouts = () => {
 
   const handleEdit = (index: number) => {
     navigation.navigate('Add', {
-      
       screen: 'AddMain',
       params: {
         name: workoutState.workouts[index].name,
@@ -28,21 +27,17 @@ const PreviousWorkouts = () => {
 
   const handleDelete = (index: number) => {
     const name = workoutState.workouts[index].name;
-    Alert.alert(
-      'Delete Workout',
-      `Are you sure you want to delete "${name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            const updatedWorkouts = workoutState.workouts.filter((_, i) => i !== index);
-            workoutState.setWorkouts(updatedWorkouts);
-          },
+    Alert.alert('Delete Workout', `Are you sure you want to delete "${name}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          const updatedWorkouts = workoutState.workouts.filter((_, i) => i !== index);
+          workoutState.setWorkouts(updatedWorkouts);
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (

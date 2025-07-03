@@ -11,7 +11,6 @@ const getWeekDates = () => {
   return Array.from({ length: 7 }, (_, i) => addDays(start, i));
 };
 
-
 const WeeklyWorkoutSchedule = () => {
   const [selectedDate, setSelectedDate] = useState<day>(format(new Date(), 'EEEE') as day);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
@@ -32,7 +31,6 @@ const WeeklyWorkoutSchedule = () => {
     const schedule = workoutState.schedules.find(s => s.workout.name === workoutName);
     if (schedule) {
       navigation.navigate('Add', {
-        
         screen: 'AddMain',
         params: {
           schedule: schedule,

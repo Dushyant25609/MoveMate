@@ -16,9 +16,7 @@ const CreateWorkoutAndScheduleScreen = () => {
       case 'createWorkout':
         return <CreateWorkout name={name} exercise={exercise} />;
       case 'createSchedule':
-        return (
-          <CreateSchedule schedule={schedule} />
-        );
+        return <CreateSchedule schedule={schedule} />;
       default:
         return null;
     }
@@ -31,8 +29,8 @@ const CreateWorkoutAndScheduleScreen = () => {
   ]);
 
   React.useEffect(() => {
-    if(initialTab === 'createWorkout')setIndex(0);
-    if(initialTab === 'createSchedule')setIndex(1);
+    if (initialTab === 'createWorkout') setIndex(0);
+    if (initialTab === 'createSchedule') setIndex(1);
   });
 
   const renderTabBar = (props: any) => (

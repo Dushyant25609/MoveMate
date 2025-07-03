@@ -10,16 +10,18 @@ interface createScheduleProps {
   schedule: Schedule;
 }
 
-const CreateSchedule: FC<createScheduleProps> = ({ schedule  = {workout : {name: 'null', exercises: [], avgTime: 0}, day : []} }) => {
+const CreateSchedule: FC<createScheduleProps> = ({
+  schedule = { workout: { name: 'null', exercises: [], avgTime: 0 }, day: [] },
+}) => {
   const [workoutMenuVisible, setWorkoutMenuVisible] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [selectedDays, setSelectedDays] = useState<day[]>([]);
-  console.log("create schedule:",schedule.workout?.name);
+  console.log('create schedule:', schedule.workout?.name);
   useEffect(() => {
     if (schedule?.workout.name === 'null') return;
     setSelectedWorkout(schedule.workout);
-    setSelectedDays(schedule.day); 
-  },[schedule]);
+    setSelectedDays(schedule.day);
+  }, [schedule]);
 
   const workoutState = useWorkoutStore();
   const navigation = useNavigation<any>();
@@ -34,7 +36,7 @@ const CreateSchedule: FC<createScheduleProps> = ({ schedule  = {workout : {name:
       workoutState.setSchedules(schedules);
     } else {
       const schedules: Schedule[] = workoutState.schedules.map(s =>
-        s.workout.name === schedule.workout.name ? { workout, day: days } : s
+        s.workout.name === schedule.workout.name ? { workout, day: days } : s,
       );
       workoutState.setSchedules(schedules);
     }

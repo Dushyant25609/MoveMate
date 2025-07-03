@@ -61,7 +61,9 @@ const HomePage = () => {
         dayName={days[todayIndex]}
         date={date}
         month={month}
-        workout={groupedWorkouts['Today'] ? groupedWorkouts['Today'][0].workout.name : 'No workout today'}
+        workout={
+          groupedWorkouts['Today'] ? groupedWorkouts['Today'][0].workout.name : 'No workout today'
+        }
       />
       <ProgressTracker workoutProgress={userData.progress} />
       <StreakTracker currentStreak={userData.streak} />

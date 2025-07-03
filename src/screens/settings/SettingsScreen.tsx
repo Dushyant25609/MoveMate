@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { useUserStore } from '../../store/user';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 
@@ -37,7 +45,9 @@ const SettingsScreen = () => {
     >
       <View className="items-center mb-8">
         <View className="w-20 h-20 bg-indigo-600 rounded-full items-center justify-center shadow-lg">
-          <Text className="text-white text-3xl font-bold">{editableName?.charAt(0)?.toUpperCase() || 'U'}</Text>
+          <Text className="text-white text-3xl font-bold">
+            {editableName?.charAt(0)?.toUpperCase() || 'U'}
+          </Text>
         </View>
         <Text className="text-white text-xl font-bold mt-4">{editableName || 'User Name'}</Text>
         <Text className="text-gray-400 text-sm">{editableEmail || 'your@email.com'}</Text>

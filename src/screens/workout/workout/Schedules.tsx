@@ -38,13 +38,11 @@ const WeeklyWorkoutSchedule = () => {
         },
       });
     }
-    console.log('Edit schedule workout:', workoutName);
     // Navigate or open modal logic goes here
   };
 
   const handleDelete = (workoutName: string) => {
     workoutState.removeSchedule(workoutName);
-    console.log('Delete schedule workout:', workoutName);
   };
 
   return (

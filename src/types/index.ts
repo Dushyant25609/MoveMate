@@ -1,4 +1,5 @@
 export interface Workout {
+  id?: number;
   name: string;
   exercises: Exercise[];
   avgTime: number;
@@ -16,6 +17,7 @@ export type day =
   | 'Tomorrow';
 
 export interface Schedule {
+  id?: number;
   workout: Workout;
   day: day[];
 }

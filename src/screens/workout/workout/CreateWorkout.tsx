@@ -4,6 +4,8 @@ import { AntDesign } from '@expo/vector-icons';
 import { useWorkoutStore } from '~/store/workout';
 import { Exercise, Set, Workout } from '~/types';
 import { useNavigation } from '@react-navigation/native';
+import { createWorkout, updateWorkout } from '~/services/user';
+import { useAuthStore } from '~/store/auth';
 
 interface createWorkoutProps {
   name?: string;
@@ -22,20 +24,19 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
     if (name === '') return;
     setWorkoutName(name);
     setExercises(exercise);
-  });
+  },[name, exercise]);
 
   const addExercise = () => {
     if (!exerciseInput.trim() || !exerciseSetsInput.trim()) return;
-    let sets;
+    const sets: Set[] = [];
     for (let i = 1; i <= parseInt(exerciseSetsInput, 10); i++) {
       const set: Set = {
         weight: 0,
         reps: 0,
       };
-      if (!sets) sets = [];
       sets.push(set);
     }
-    setExercises([...exercises, { name: exerciseInput, sets: sets as Set[], previousWeight: 0 }]);
+    setExercises([...exercises, { name: exerciseInput, sets: sets, previousWeight: 0 }]);
     setExerciseInput('');
     setExerciseSetsInput('');
   };
@@ -44,9 +45,17 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
     setExercises(exercises.filter((_, i) => i !== index));
   };
 
-  const saveWorkout = (name: string, exercises: Exercise[]) => {
+  const saveWorkout = async (name: string, exercises: Exercise[]) => {
+    const jwt = useAuthStore.getState().jwt;
+    if(!jwt) return;
     if (name === '' || exercise.length === 0) {
-      const workouts: Workout[] = [...workoutState.workouts, { name, exercises, avgTime: 0 }];
+      const response = await createWorkout({ jwt, workoutData: {name,exercises,avgTime: 0}});
+      if("error" in response) {
+        Alert.alert('Error', response.error);
+        return;
+      }
+      (response)
+      const workouts: Workout[] = [response, ...workoutState.workouts];;
       workoutState.setWorkouts(workouts);
       const currentAvgTime = { ...workoutState.workoutAvgTime };
       if (!currentAvgTime[name]) {
@@ -54,12 +63,12 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
         workoutState.setWorkoutAvgTime(currentAvgTime);
       }
     } else {
-      const workouts: Workout[] = workoutState.workouts.map(workout => {
-        if (workout.name === name) {
-          return { ...workout, exercises };
-        }
-        return workout;
-      });
+      const response = await updateWorkout({ jwt, workoutData: {name,exercises,avgTime: 0}});
+      if("error" in response) {
+        Alert.alert('Error', response.error);
+        return;
+      }
+      const workouts: Workout[] = [response, ...workoutState.workouts];
       workoutState.setWorkouts(workouts);
     }
     setWorkoutName('');
@@ -68,7 +77,7 @@ const CreateWorkout: FC<createWorkoutProps> = ({ name = '', exercise = [] }) => 
     setExercises([]);
     navigation.navigate('Workout', { initialTab: 'previousWorkouts' });
     navigation.setParams({ name: undefined, exercise: undefined, initialTab: undefined });
-    console.log('Workout Saved');
+    ('Workout Saved');
   };
 
   return (

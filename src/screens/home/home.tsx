@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, RefreshControl } from 'react-native';
+ import React, { useState, useCallback } from 'react';
 import { dayIndexMap, days, months } from '~/constant/date';
 import Header from '~/components/home/Header';
 import DateWorkoutCard from '~/components/home/DateWorkoutCard';
@@ -7,14 +7,24 @@ import ProgressTracker from '~/components/home/ProgressTracker';
 import StreakTracker from '~/components/home/StreakTracker';
 import QuickActions from '~/components/home/QuickActions';
 import { useUserStore } from '~/store/user';
+ import { useAuthStore } from '~/store/auth';
 import { getCurrentWeekMap } from '~/utils/date';
 import { useWorkoutStore } from '~/store/workout';
 import { Schedule } from '~/types';
 import UpcomingWorkouts from '~/components/home/UpcomingWorkouts';
 
 const HomePage = () => {
+  const [refreshing, setRefreshing] = useState(false);
+  const authState = useAuthStore();
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await authState.refreshAuth();
+    setRefreshing(false);
+  }, [authState]);
   const weekMap = getCurrentWeekMap();
-  const scheduleData = useWorkoutStore(state => state.schedules);
+  const scheduleData = useWorkoutStore(state => state.schedules || []);
+  const setCurrentWorkout = useWorkoutStore(state => state.setCurrentWorkout);
   const userData = useUserStore();
 
   const date = new Date().getDate();
@@ -35,7 +45,6 @@ const HomePage = () => {
       let label = d;
       if (index === todayIndex) label = 'Today';
       else if (index === tomorrowIndex) label = 'Tomorrow';
-
       if (!groupedWorkouts[label]) groupedWorkouts[label] = [];
       groupedWorkouts[label].push({
         workout: entry.workout,
@@ -54,8 +63,19 @@ const HomePage = () => {
     );
   });
 
+  if(groupedWorkouts['Today']){
+    setCurrentWorkout(groupedWorkouts['Today'][0].workout);
+  } else {
+    setCurrentWorkout(null);
+  }
+
   return (
-    <ScrollView className="h-full px-4 pt-10 pb-6 bg-primary-dark">
+    <ScrollView
+      className="h-full px-4 pt-10 pb-6 bg-primary-dark"
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FFFFFF" />
+      }
+    >
       <Header userName={userData.name} />
       <DateWorkoutCard
         dayName={days[todayIndex]}

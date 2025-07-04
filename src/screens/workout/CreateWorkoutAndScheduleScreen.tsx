@@ -9,7 +9,6 @@ import { Route, useRoute } from '@react-navigation/native';
 const CreateWorkoutAndScheduleScreen = () => {
   const route = useRoute<any>();
   const { name, exercise, schedule, initialTab } = route.params || {};
-  console.log('initialTab', initialTab);
 
   const renderScene = ({ route: tabRoute }: { route: Route<string> }) => {
     switch (tabRoute.key) {

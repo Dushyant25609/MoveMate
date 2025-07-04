@@ -1,8 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { FC, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Menu, Button, Checkbox } from 'react-native-paper';
 import { days } from '~/constant/date';
+import { createSchedule, updateSchedule } from '~/services/user';
+import { useAuthStore } from '~/store/auth';
 import { useWorkoutStore } from '~/store/workout';
 import { day, Schedule, Workout } from '~/types';
 
@@ -16,7 +18,6 @@ const CreateSchedule: FC<createScheduleProps> = ({
   const [workoutMenuVisible, setWorkoutMenuVisible] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [selectedDays, setSelectedDays] = useState<day[]>([]);
-  console.log('create schedule:', schedule.workout?.name);
   useEffect(() => {
     if (schedule?.workout.name === 'null') return;
     setSelectedWorkout(schedule.workout);
@@ -30,14 +31,27 @@ const CreateSchedule: FC<createScheduleProps> = ({
     setSelectedDays(prev => (prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]));
   };
 
-  const saveSchedules = (workout: Workout, days: day[]) => {
+  const saveSchedules = async (workout: Workout, days: day[]) => {
+    const jwt = useAuthStore.getState().jwt;
+    if(!jwt){
+      Alert.alert('Error', 'Please login first');
+      return;
+    }
     if (schedule.workout.name === 'null') {
-      const schedules: Schedule[] = [...workoutState.schedules, { workout, day: days }];
+      const response = await createSchedule({ jwt, scheduleData: { workout, day: days } });
+      if ('error' in response) {
+        Alert.alert('Error', response.error);
+        return;
+      }
+      const schedules: Schedule[] = [{ workout: {...workout,  id: response.workoutId}, day: days }, ...workoutState.schedules];
       workoutState.setSchedules(schedules);
     } else {
-      const schedules: Schedule[] = workoutState.schedules.map(s =>
-        s.workout.name === schedule.workout.name ? { workout, day: days } : s,
-      );
+      const response = await updateSchedule({ jwt, scheduleData: { workout, day: days } });
+      if ('error' in response) {
+        Alert.alert('Error', response.error);
+        return;
+      }
+      const schedules: Schedule[] = [{ workout: {...workout,  id: response.workoutId}, day: days }, ...workoutState.schedules];
       workoutState.setSchedules(schedules);
     }
     setSelectedDays([]);

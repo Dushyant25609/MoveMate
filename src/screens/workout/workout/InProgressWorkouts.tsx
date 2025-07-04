@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import StartWorkoutScreen from './StartWorkoutScreen';
@@ -9,6 +9,13 @@ const SelectWorkoutScreen = () => {
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [started, setStarted] = useState<boolean>(false);
   const workoutState = useWorkoutStore();
+  const currentWorkout = useWorkoutStore(state => state.currentWorkout);
+
+  useEffect(() => {
+    if (currentWorkout !== null) {
+      setSelectedWorkout(currentWorkout);
+    }
+  }, [currentWorkout]);
 
   const handleSelect = (workout: Workout) => {
     if (selectedWorkout?.name === workout.name) {

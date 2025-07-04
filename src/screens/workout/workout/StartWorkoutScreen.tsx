@@ -156,7 +156,6 @@ const StartWorkoutScreen: FC<startWorkoutProps> = ({ workout }) => {
       <TouchableOpacity
         className="absolute bottom-6 left-4 right-4 bg-indigo-700 py-4 rounded-2xl shadow-xl"
         onPress={() => {
-          console.log('Workout finished:', exercises);
         }}
       >
         <Text className="text-white text-lg text-center font-bold">Finish Workout</Text>

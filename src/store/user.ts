@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User } from '~/types';
 
+import { User } from '~/types';
+import { getUser } from '~/services/user';
 interface UserStore extends User {
   setName: (name: string) => void;
   setEmail: (email: string) => void;
@@ -23,6 +24,20 @@ export const useUserStore = create<UserStore>()(
       setStreak: streak => set({ streak }),
       setProgrees: progress => set({ progress }),
       logout: () => set({ name: '', email: '' }),
+      fetchUser: async () => {
+        const jwt = await AsyncStorage.getItem('jwt');
+        if (!jwt) return;
+        // Assuming getUser is available (needs to be imported or defined elsewhere)
+        const response = await getUser({ jwt });
+        if ('error' in response) {
+          console.error('Failed to fetch user:', response.error);
+          return;
+        }
+        set({
+          name: response.name,
+          email: response.email,
+        });
+      },
     }),
     {
       name: 'user-store',

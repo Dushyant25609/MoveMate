@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { useUserStore } from '../../store/user';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { useAuthStore } from '~/store/auth';
+import { updateUser } from '~/services/user';
 
 const SettingsScreen = () => {
   const { name, email, setName, setEmail } = useUserStore();
@@ -26,7 +28,17 @@ const SettingsScreen = () => {
     setHasChanges(editableName !== name || editableEmail !== email);
   }, [editableName, editableEmail, name, email]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const jwt = useAuthStore.getState().jwt;
+    if (!jwt) {
+      Alert.alert('Error', 'JWT is missing. Please log in.');
+      return;
+    }
+    const response = await updateUser({ jwt, name: editableName, email: editableEmail });
+    if ("error" in response) {
+      Alert.alert('Error', response.error);
+      return;
+    }
     setName(editableName);
     setEmail(editableEmail);
     Alert.alert('Success', 'User details updated successfully!');
@@ -34,7 +46,8 @@ const SettingsScreen = () => {
   };
 
   const handleLogout = () => {
-    Alert.alert('Logged Out', 'This would clear auth state.');
+    Alert.alert('Logged Out', 'You have been logged out.');
+    useAuthStore.getState().logout();
     // You can integrate your auth state reset here
   };
 

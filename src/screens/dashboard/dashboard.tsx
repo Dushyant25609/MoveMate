@@ -5,9 +5,9 @@ import { LineChart } from 'react-native-chart-kit';
 import { useWorkoutStore } from '~/store/workout';
 
 const DashboardScreen = () => {
-  const workoutData = useWorkoutStore();
+  const workoutState = useWorkoutStore();
   const [selectedWorkout, setSelectedWorkout] = useState<string>('All');
-  const data = workoutData.workoutAvgTime[selectedWorkout] || [0, 0, 0, 0, 0, 0, 0];
+  const data = workoutState.workoutAvgTime[selectedWorkout] || [0, 0, 0, 0, 0, 0, 0];
   const averageDuration = (
     data.reduce((sum, val) => sum + val, 0) / data.filter(v => v > 0).length || 0
   ).toFixed(1);
@@ -30,7 +30,7 @@ const DashboardScreen = () => {
             dropdownIconColor="white"
             style={{ color: 'white', width: '100%', height: '100%' }}
           >
-            {['All', ...workoutData.workouts.map(w => w.name)].map(name => (
+            {['All', ...workoutState.workouts.map(w => w.name)].map(name => (
               <Picker.Item label={name} value={name} key={name} color="white" />
             ))}
           </Picker>
@@ -42,7 +42,7 @@ const DashboardScreen = () => {
         <LineChart
           data={{
             labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [{ data: workoutData.workoutAvgTime[selectedWorkout] }],
+            datasets: [{ data: data }],
           }}
           width={Dimensions.get('window').width - 40}
           height={220}

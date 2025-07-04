@@ -22,7 +22,6 @@ const PreviousWorkouts = () => {
         initialTab: 'createWorkout',
       },
     });
-    console.log('Edit workout:', workoutState.workouts[index].name);
   };
 
   const handleDelete = (index: number) => {

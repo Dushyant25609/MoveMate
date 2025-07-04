@@ -30,7 +30,7 @@ export type AddStackParamList = {
 };
 
 export type WorkoutStackParamList = {
-  WorkoutMain: { initialTab?: 'previousWorkouts' | 'previousSchedules' };
+  WorkoutMain: { initialTab?: 'previousWorkouts' | 'previousSchedules' | 'inProgress' };
 };
 
 export type SettingsStackParamList = {

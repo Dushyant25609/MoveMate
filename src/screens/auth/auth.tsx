@@ -2,25 +2,33 @@ import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { login, signUp } from '~/services/auth';
 import { useAuthStore } from '~/store/auth';
-import { useUserStore } from '~/store/user';
 
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const authState = useAuthStore();
-  const userState = useUserStore();
+  const setJwt = useAuthStore(state => state.setToken);
 
-  const handleAuth = () => {
+  const handleAuth = async () => {
     if (!email || !password || (!isLogin && password !== confirmPassword)) {
       alert('Please check your input fields.');
       return;
     }
-    userState.setEmail(email);
-    userState.setName(email.split('@')[0]);
-    authState.setIsLoggedIn(true);
+    let response;
+    if(isLogin){
+      response = await login({email, password});
+    } else {
+      response = await signUp({name, email, password});
+    }
+    if( "error" in response ){
+      alert(response.error);
+      return;
+    }
+    setJwt(response.jwt || null);
   };
 
   return (
@@ -38,6 +46,19 @@ const AuthScreen = () => {
           tint="dark"
           className="w-full rounded-3xl p-6 shadow-xl border border-white/10 bg-white/10"
         >
+          {!isLogin && 
+          <>
+          <Text className="text-white mb-1 text-sm">Name</Text>
+          <TextInput
+              className="bg-white/10 text-white px-4 py-3 rounded-xl mb-4 border border-white/10"
+              placeholder="Enter your Name"
+              placeholderTextColor="#aaa"
+              autoCapitalize="none"
+              value={name}
+              onChangeText={setName} />
+              </>
+          }
+
           <Text className="text-white mb-1 text-sm">Email</Text>
           <TextInput
             className="bg-white/10 text-white px-4 py-3 rounded-xl mb-4 border border-white/10"
